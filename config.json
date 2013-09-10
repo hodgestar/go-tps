@@ -1,0 +1,4 @@
+{
+    "user_store": "tps_user_store",
+    "metric_store": "tps_metric_store"
+}
