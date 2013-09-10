@@ -60,9 +60,85 @@ describe("TPS", function() {
         var p = tester.check_state({
             user: user,
             content: "Smith",
-            next_state: "current_activity",
+            next_state: "start_activity",
             response: "^Bob, you are not working. What" +
                       " are you going to work on next?$"
+        });
+        p.then(done, done);
+    });
+
+    it("should tell people to get to it", function (done) {
+        var user = {
+            current_state: 'start_activity',
+            answers: {
+                first_name: 'Bob',
+                surname: 'Smith'
+            }
+        };
+        var p = tester.check_state({
+            user: user,
+            content: "Smith",
+            next_state: "end_get_to_it",
+            response: "^Better get to it, Bob.$",
+            continue_session: false
+        });
+        p.then(done, done);
+    });
+
+    it("should berate people who are working", function (done) {
+        var user = {
+            current_state: 'stop_activity',
+            answers: {
+                first_name: 'Bob',
+                surname: 'Smith',
+                start_activity: 'writing reports'
+            }
+        };
+        var p = tester.check_state({
+            user: user,
+            content: null, // session start
+            next_state: "stop_activity",
+            response: "^Are you done writing reports yet, Bob\?" +
+                      "[^]1. Yes" +
+                      "[^]2. No$"
+        });
+        p.then(done, done);
+    });
+
+    it("should berate people who have just finished working", function (done) {
+        var user = {
+            current_state: 'stop_activity',
+            answers: {
+                first_name: 'Bob',
+                surname: 'Smith',
+                start_activity: 'writing reports'
+            }
+        };
+        var p = tester.check_state({
+            user: user,
+            content: "1",
+            next_state: "start_activity",
+            response: "^Bob, you are not working."
+        });
+        p.then(done, done);
+    });
+
+    it("should berate people aren't finished working", function (done) {
+        var user = {
+            current_state: 'stop_activity',
+            answers: {
+                first_name: 'Bob',
+                surname: 'Smith',
+                start_activity: 'writing reports'
+            }
+        };
+        var p = tester.check_state({
+            user: user,
+            content: "2",
+            next_state: "end_work_done",
+            response: "^Why aren't you finished writing reports, Bob?" +
+                " I'm going to need you to come in on Saturday.",
+            continue_session: false
         });
         p.then(done, done);
     });
